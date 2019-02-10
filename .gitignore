@@ -10,3 +10,8 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+# Zip, rda and csv data files
+*.rda
+*.zip
+*.csv
