@@ -15,3 +15,8 @@
 *.rda
 *.zip
 *.csv
+
+# R files
+*.Rproj
+*.Rhistory
+.Rproj.user
