@@ -23,23 +23,33 @@ NIFirms$year <- strsplit(
   subset(nchar(.) == 4) %>%
   as.integer()
 
-uniqueYears <- NIFirms$year %>% 
-  unique() %>% 
-  sort()
 
-for (year in NIFirms$year %>% unique() %>% sort()) {
-  NIFirmsYear <- subset(
-    NIFirms, 
-    year <= year)
+generateCompanyMapAnimation <- function(firmData) {
+  uniqueYears <- firmData$year %>% 
+    unique() %>% 
+    sort() %>%
+    as.integer()
   
-  ggplot(data = NIFirmsYear) + 
-    geom_point(aes(x = long, y = lat, colour = SICCode.SicText_1)) + 
-    labs(title = "Map of NI firms established by " %>% paste0(year)) +
-    theme_minimal() + 
-    theme(
-      legend.position = "none",
-      axis.ticks = element_blank())
-  
+  for (i in 1:length(uniqueYears)) {
+    NIFirmsYear <- subset(
+      firmData, 
+      year <= uniqueYears[i])
+    
+    companiesEstablised <- ggplot(data = NIFirmsYear) + 
+      geom_point(aes(x = long, y = lat, colour = SICCode.SicText_1)) + 
+      labs(title = "Map of NI firms established by " %>% paste0(uniqueYears[i])) +
+      coord_cartesian(
+        xlim = c(-8.25, -5),
+        ylim = c(54, 55.5)) +
+      theme_minimal() +
+      theme(
+        legend.position = "none",
+        axis.ticks = element_blank())
+    
+    ggsave(
+      filename = getwd() %>% paste0("/coordinate-mapping/animation/", uniqueYears[i], "-company-map.png"), 
+      plot = companiesEstablised, 
+      device = "png")  
+  }
 }
-
 
