@@ -42,20 +42,21 @@ aggregate_yearly_numbers <- function(NIFirms, fromYear, techSector = FALSE) {
       aes(
         x = year,
         y = number,
-        colour = "red")) +
+        colour = "#1E88E5")) +
     geom_point(
       aes(
         x = year,
         y = number,
-        colour = "red")) +
+        colour = "#1E88E5")) +
     geom_area(
       aes(
         x = year,
         y = number,
-        fill = "red"),
+        fill = "#1E88E5"),
       alpha = 0.3) +
-    ylab(label = "Number of technology firms") +
+    ylab(label = "Count") +
     xlab(label = "Year") +
+    labs(title = "Number of technology firms registered in Northern Ireland") +
     theme_minimal() +
     theme(legend.position = "none")
 }
@@ -105,12 +106,9 @@ change_in_yearly_firms <- function(NIFirms, fromYear, techSector = FALSE) {
 }
 
 
-NIFirmsJSON <- jsonlite::read_json(
-  path = getwd() %>% 
-    paste0("/../src/data/northern-ireland/allNIFirms.json"))
-
-NIFirms <- jsonlite::fromJSON(
-  txt = NIFirmsJSON[[1]][1])
+getwd() %>% 
+  paste0("/data/NIFirms.rda") %>% 
+  load()
 
 # Only considered the firms that are based on the island
 NIFirms %<>% 
