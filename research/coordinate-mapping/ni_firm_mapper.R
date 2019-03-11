@@ -37,7 +37,7 @@ generate_shapefile_map <- function() {
 }
 
 
-generate_company_map_years <- function(firmData, techSector = FALSE, fromYear) {
+generate_company_map_years <- function(firmData, fromYear, sectionOnly = FALSE, techSector = FALSE, legend = TRUE) {
   if (techSector) {
     firmData %<>% 
       subset(`5DIGITSIC` %in% TECHNOLOGY_SIC_CODES)
@@ -54,10 +54,23 @@ generate_company_map_years <- function(firmData, techSector = FALSE, fromYear) {
   
   shapefileMap <- generate_shapefile_map()
   
+  sectorColours <- setNames(
+    c("#9C27B0", "#E91E63", "#F44336", "#2196F3", "#3F51B5", "#673AB7", 
+      "#009688", "#00BCD4", "#03A9F4", "#CDDC39", "#8BC34A", "#4CAF50", 
+      "#FF9800", "#FFC107", "#FFEB3B", "#9E9E9E", "#795548", "#FF5722", 
+      "#607D8B", "#880E4F", "#1565C0", "#388E3C"), 
+    c(sort(unique(NIFirms$section)), NA))
+  
   for (i in 1:length(uniqueYears)) {
-    NIFirmsYear <- subset(
-      firmData, 
-      year <= uniqueYears[i])
+    NIFirmsYear <- firmData %>% 
+      subset(year <= uniqueYears[i]) %>%
+      subset(!is.na(section))
+    
+    if (sectionOnly) {
+      `SIC Sector` <- NIFirmsYear$section
+    } else {
+      `SIC Sector` <- NIFirmsYear$`5DIGITSIC`
+    }
     
     "Generating map for " %>%
     paste0(uniqueYears[i]) %>% 
@@ -69,13 +82,17 @@ generate_company_map_years <- function(firmData, techSector = FALSE, fromYear) {
         aes(
           x = long, 
           y = lat,
-          colour = `5DIGITSIC`)) + 
-      labs(title = paste0("All NI ", ifelse(techSector, sectorName, "")," firms registered with Companies House: ", uniqueYears[i])) +
+          colour = section),
+        alpha = 0.6) + 
+      labs(
+        color = "Industry sector code",
+        title = paste0("All NI ", ifelse(techSector, sectorName, "")," firms registered with Companies House: ", uniqueYears[i])) +
       ylab("") + xlab("") +
       coord_cartesian(
         xlim = c(-8.25, -5),
         ylim = c(54, 55.5)) +
       theme_minimal() +
+      scale_color_manual(values = sectorColours) +
       theme(
         panel.border = element_blank(), 
         panel.grid.major = element_blank(),
@@ -83,7 +100,7 @@ generate_company_map_years <- function(firmData, techSector = FALSE, fromYear) {
         axis.text = element_blank(),
         panel.background = element_blank(),
         axis.ticks = element_blank(),
-        legend.position = "none")
+        legend.position = ifelse(legend, "right", "none"))
     
     ggsave(
       filename = getwd() %>% 
@@ -138,12 +155,9 @@ animate_firm_establishment <- function(firmData, techSector = FALSE) {
 }
 
 
-NIFirmsJSON <- jsonlite::read_json(
-  path = getwd() %>% 
-    paste0("/../src/data/northern-ireland/allNIFirms.json"))
-
-NIFirms <- jsonlite::fromJSON(
-  txt = NIFirmsJSON[[1]][1])
+getwd() %>% 
+  paste0("/data/NIFirms.rda") %>% 
+  load()
 
 TECHNOLOGY_SIC_CODES <- c(
   58210, 58290, 61100, 61200, 61300, 61900, 62011, 
@@ -162,6 +176,6 @@ NIFirms$year <- strsplit(
   as.integer()
 
 generate_company_map_years(
-  firmData = NIFirms, 
-  techSector = TRUE)
+  firmData = NIFirms,
+  sectionOnly = TRUE)
 
