@@ -1,7 +1,6 @@
 library(ggmap)
 library(ggplot2)
 library(ggthemes)
-library(jsonlite)
 library(magrittr)
 library(maptools)
 library(gganimate)
